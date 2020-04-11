@@ -167,8 +167,8 @@ head(col0.abc)
 fold.change <- col0.abc$logFC
 genes.ids <- rownames(col0.abc)
 
-activated.genes <- genes.ids[fold.change > 1]
-repressed.genes <- genes.ids[fold.change < - 1]
+activated.genes <- genes.ids[fold.change > 2]
+repressed.genes <- genes.ids[fold.change < - 2]
 
 length(activated.genes)
 length(repressed.genes)
