@@ -1,7 +1,11 @@
 # Unidad 1. Estudios Transcriptómicos Masivos: Análisis de Microarrays  
 # Bilogía Molecular de Sistemas, 3º Grado en Bioquímica
-# Francisco J. Romero-Campero - email: fran@us.es - web: http://www.cs.us.es/~fran
-# Dpto CCIA - Unidad de Desarrollo Vegetal del IBVF 
+# Francisco J. Romero-Campero - email: fran@us.es
+# YouTube: https://www.youtube.com/channel/UCRBDDVQHHisLcZtLPlYvmow
+# Twitter: https://twitter.com/fran_rom_cam
+# IG: @greennetworks https://www.instagram.com/greennetworks/
+# Dpto Ciencias de la Computación e Inteligencia Artificial
+## Unidad de Desarrollo Vegetal del Instituto de Bioquímica Vegetal y Fotosíntesis
 # Universidad de Sevilla 
   
 # Lectura de los datos brutos.
@@ -116,7 +120,7 @@ microarray.processed.data <- rma(microarray.raw.data)
 
 ##Una vez preprocesados los datos comprobamos si son comparables.
 
-boxplot(microarray.processed.data,col=rainbow(8),las=2,ylab="Luminescence")
+boxplot(microarray.processed.data,col=rainbow(8),las=2,ylab="Fluorescence A.U.")
 hist(microarray.processed.data,col=rainbow(8))
 
 ##La estimación de los niveles de expresión realizada por RMA puede extraerse 
@@ -133,7 +137,8 @@ dim(expression.level)
 ##fácilmente a error. Por lo tanto, renombramos apropiadamente las columnas 
 ##con el nombre de las muestras. 
 
-sampleID <- c("WT_with_Fe_1","WT_with_Fe_2","WT_no_Fe_1","WT_no_Fe_2","pye_with_Fe_1","pye_with_Fe_2","pye_no_Fe_1","pye_no_Fe_2")
+sampleID <- c("WT_with_Fe_1","WT_with_Fe_2","WT_no_Fe_1","WT_no_Fe_2",
+              "pye_with_Fe_1","pye_with_Fe_2","pye_no_Fe_1","pye_no_Fe_2")
 colnames(expression.level) <- sampleID
 head(expression.level)
 
@@ -141,16 +146,24 @@ head(expression.level)
 ##sumando las correspondientes columnas y dividiendo por el número de 
 ##réplicas.
 
-wt.with.fe <- (expression.level[,"WT_with_Fe_1"] + expression.level[,"WT_with_Fe_2"])/2
-wt.no.fe <- (expression.level[,"WT_no_Fe_1"] + expression.level[,"WT_no_Fe_2"])/2
-pye.with.fe <- (expression.level[,"pye_with_Fe_1"] + expression.level[,"pye_with_Fe_2"])/2
-pye.no.fe <- (expression.level[,"pye_no_Fe_1"] + expression.level[,"pye_no_Fe_2"])/2
+wt.with.fe <- (expression.level[,"WT_with_Fe_1"] + 
+                 expression.level[,"WT_with_Fe_2"])/2
+
+wt.no.fe <- (expression.level[,"WT_no_Fe_1"] + 
+               expression.level[,"WT_no_Fe_2"])/2
+
+pye.with.fe <- (expression.level[,"pye_with_Fe_1"] + 
+                  expression.level[,"pye_with_Fe_2"])/2
+
+pye.no.fe <- (expression.level[,"pye_no_Fe_1"] + 
+                expression.level[,"pye_no_Fe_2"])/2
 
 ##Creamos una matriz que contenga por columna la expresión media para cada 
 ##condición o genotipo. Nombramos las filas con el nombre de las sondas 
 ##(transcritos) y la columnas con la condición o genotipo. 
 
-mean.expression <- matrix(c(wt.with.fe,wt.no.fe,pye.with.fe,pye.no.fe),ncol=4)
+mean.expression <- matrix(c(wt.with.fe,wt.no.fe,
+                            pye.with.fe,pye.no.fe),ncol=4)
 conditions.id <- c("WT_with_Fe","WT_no_Fe","pye_with_Fe","pye_no_Fe")
 rownames(mean.expression) <- names(wt.with.fe)
 colnames(mean.expression) <- conditions.id
@@ -205,7 +218,8 @@ library(limma)
 ##anteriores. 
 
 experimental.design <- model.matrix(~ -1+factor(c(1,1,2,2,3,3,4,4)))
-colnames(experimental.design) <- c("WT_with_Fe","WT_no_Fe","pye_with_Fe","pye_no_Fe")
+colnames(experimental.design) <- c("WT_with_Fe","WT_no_Fe",
+                                   "pye_with_Fe","pye_no_Fe")
 
 ##A continuación, ajustamos la estimación de los niveles de expresión de cada
 ##gen a un modelo lineal teniendo en cuenta el diseño experimental. Este paso
@@ -233,7 +247,12 @@ linear.fit <- lmFit(expression.level, experimental.design)
 ##correspondientes separadas por un guión -. También recibe el argumento 
 ##levels, un vector con el nombre de las condiciones:
   
-contrast.matrix <- makeContrasts(WT_no_Fe-WT_with_Fe,pye_no_Fe-pye_with_Fe,WT_with_Fe-pye_with_Fe,WT_no_Fe-pye_no_Fe,levels=c("WT_with_Fe","WT_no_Fe","pye_with_Fe","pye_no_Fe"))
+contrast.matrix <- makeContrasts(WT_no_Fe-WT_with_Fe,
+                                 pye_no_Fe-pye_with_Fe,
+                                 WT_with_Fe-pye_with_Fe,
+                                 WT_no_Fe-pye_no_Fe,
+                                 levels=c("WT_with_Fe","WT_no_Fe",
+                                          "pye_with_Fe","pye_no_Fe"))
 
 ##Calculamos el fold-change y los p-valores correspondientes para cada gen en
 ##cada uno de los constrastes especificados utilizando las funciones *constrasts.fit* 
@@ -286,8 +305,13 @@ length(repressed.genes.WT.with.no.Fe.1)
 ##criterio del fold-change son los gráficos de dispersión o scatterplots. 
 
 plot(wt.with.fe,wt.no.fe,pch=19,cex=0.5,col="grey",xlab="WT with Fe",ylab="WT no Fe")
-points(wt.with.fe[activated.genes.WT.with.no.Fe.1],wt.no.fe[activated.genes.WT.with.no.Fe.1],pch=19,cex=0.5,col="red")
-points(wt.with.fe[repressed.genes.WT.with.no.Fe.1],wt.no.fe[repressed.genes.WT.with.no.Fe.1],pch=19,cex=0.5,col="blue")
+
+points(wt.with.fe[activated.genes.WT.with.no.Fe.1],
+       wt.no.fe[activated.genes.WT.with.no.Fe.1],pch=19,cex=0.5,col="red")
+
+points(wt.with.fe[repressed.genes.WT.with.no.Fe.1],
+       wt.no.fe[repressed.genes.WT.with.no.Fe.1],pch=19,cex=0.5,col="blue")
+
 text(wt.with.fe["254550_at"]+0.3,wt.no.fe["254550_at"]+0.3,"IRT1", col="black", cex=0.7)
 text(wt.with.fe["252427_at"]+0.3,wt.no.fe["252427_at"]+0.3,"PYE", col="black", cex=0.7)
 text(wt.with.fe["257062_at"]+0.3,wt.no.fe["257062_at"]+0.3,"BTS", col="black", cex=0.7)
@@ -307,13 +331,19 @@ library(annaffy)
 ##anotación. Las funciones *saveHTML* y *saveText* escriben la tabla anterior 
 ##en formato HTML y txt.
 
-activated.genes.WT.with.no.Fe.1.table <- aafTableAnn(activated.genes.WT.with.no.Fe.1, "ath1121501.db", aaf.handler())
-saveHTML(activated.genes.WT.with.no.Fe.1.table, file="activated_genes_WT_with_no_Fe_1.html")
-saveText(activated.genes.WT.with.no.Fe.1.table, file="activated_genes_WT_with_no_Fe_1.txt")
+activated.genes.WT.with.no.Fe.1.table <- aafTableAnn(activated.genes.WT.with.no.Fe.1, 
+                                                     "ath1121501.db", aaf.handler())
+saveHTML(activated.genes.WT.with.no.Fe.1.table, 
+         file="activated_genes_WT_with_no_Fe_1.html")
+saveText(activated.genes.WT.with.no.Fe.1.table, 
+         file="activated_genes_WT_with_no_Fe_1.txt")
 
-repressed.genes.WT.with.no.Fe.1.table <- aafTableAnn(repressed.genes.WT.with.no.Fe.1, "ath1121501.db", aaf.handler())
-saveHTML(repressed.genes.WT.with.no.Fe.1.table, file="repressed_genes_WT_with_no_Fe_1.html")
-saveText(repressed.genes.WT.with.no.Fe.1.table, file="repressed_genes_WT_with_no_Fe_1.txt")
+repressed.genes.WT.with.no.Fe.1.table <- aafTableAnn(repressed.genes.WT.with.no.Fe.1, 
+                                                     "ath1121501.db", aaf.handler())
+saveHTML(repressed.genes.WT.with.no.Fe.1.table, 
+         file="repressed_genes_WT_with_no_Fe_1.html")
+saveText(repressed.genes.WT.with.no.Fe.1.table, 
+         file="repressed_genes_WT_with_no_Fe_1.txt")
 
 
 ## Método que combina inferencia estdística con fold-change:
@@ -338,8 +368,11 @@ genes.ids.WT.with.no.Fe <- rownames(WT.with.no.Fe)
 ##Fijamos como umbral de significancia un p-valor menor a 0.05 y como umbral 
 ##para el fold change 2 (que corresponde a 1 en log2).
 
-activated.genes.WT.with.no.Fe.2 <- genes.ids.WT.with.no.Fe[fold.change.WT.with.no.Fe > 1 & p.value.WT.with.no.Fe < 0.05]
-repressed.genes.WT.with.no.Fe.2 <- genes.ids.WT.with.no.Fe[fold.change.WT.with.no.Fe < -1 & p.value.WT.with.no.Fe < 0.05]
+activated.genes.WT.with.no.Fe.2 <- genes.ids.WT.with.no.Fe[fold.change.WT.with.no.Fe > 1 & 
+                                                             p.value.WT.with.no.Fe < 0.05]
+
+repressed.genes.WT.with.no.Fe.2 <- genes.ids.WT.with.no.Fe[fold.change.WT.with.no.Fe < -1 & 
+                                                             p.value.WT.with.no.Fe < 0.05]
 
 length(activated.genes.WT.with.no.Fe.2)
 length(repressed.genes.WT.with.no.Fe.2)
@@ -353,12 +386,22 @@ names(fold.change.WT.with.no.Fe) <- genes.ids.WT.with.no.Fe
 log.p.value.WT.with.no.Fe <- -log10(p.value.WT.with.no.Fe)
 names(log.p.value.WT.with.no.Fe)  <- genes.ids.WT.with.no.Fe
 
-plot(fold.change.WT.with.no.Fe,log.p.value.WT.with.no.Fe,pch=19,cex=0.5,col="grey",ylab="-log10(p value)",xlab="log2 fold change")
-points(fold.change.WT.with.no.Fe[activated.genes.WT.with.no.Fe.2],log.p.value.WT.with.no.Fe[activated.genes.WT.with.no.Fe.2],pch=19,cex=0.5,col="red")
-points(fold.change.WT.with.no.Fe[repressed.genes.WT.with.no.Fe.2],log.p.value.WT.with.no.Fe[repressed.genes.WT.with.no.Fe.2],pch=19,cex=0.5,col="blue")
+plot(fold.change.WT.with.no.Fe,log.p.value.WT.with.no.Fe,
+     pch=19,cex=0.5,col="grey",ylab="-log10(p value)",xlab="log2 fold change")
 
-text(fold.change.WT.with.no.Fe["254550_at"],log.p.value.WT.with.no.Fe["254550_at"]+0.3,"IRT1", col="black")
-text(fold.change.WT.with.no.Fe["251109_at"]+0.3,log.p.value.WT.with.no.Fe["251109_at"],"FER1", col="black")
+points(fold.change.WT.with.no.Fe[activated.genes.WT.with.no.Fe.2],
+       log.p.value.WT.with.no.Fe[activated.genes.WT.with.no.Fe.2],
+       pch=19,cex=0.5,col="red")
+
+points(fold.change.WT.with.no.Fe[repressed.genes.WT.with.no.Fe.2],
+       log.p.value.WT.with.no.Fe[repressed.genes.WT.with.no.Fe.2],
+       pch=19,cex=0.5,col="blue")
+
+text(fold.change.WT.with.no.Fe["254550_at"],
+     log.p.value.WT.with.no.Fe["254550_at"]+0.3,"IRT1", col="black")
+
+text(fold.change.WT.with.no.Fe["251109_at"]+0.3,
+     log.p.value.WT.with.no.Fe["251109_at"],"FER1", col="black")
 
 ## Mapas de Calor 
 
@@ -371,7 +414,14 @@ text(fold.change.WT.with.no.Fe["251109_at"]+0.3,log.p.value.WT.with.no.Fe["25110
 ##los genes expresados de forma diferencial en un vector y eliminar
 ##repeticiones.
 
-complete.DEGs <- c(diff.genes.1[["activated.genes"]],diff.genes.1[["repressed.genes"]],diff.genes.2[["activated.genes"]],diff.genes.2[["repressed.genes"]],diff.genes.3[["activated.genes"]],diff.genes.3[["repressed.genes"]],diff.genes.4[["activated.genes"]],diff.genes.4[["repressed.genes"]])
+complete.DEGs <- c(diff.genes.1[["activated.genes"]],
+                   diff.genes.1[["repressed.genes"]],
+                   diff.genes.2[["activated.genes"]],
+                   diff.genes.2[["repressed.genes"]],
+                   diff.genes.3[["activated.genes"]],
+                   diff.genes.3[["repressed.genes"]],
+                   diff.genes.4[["activated.genes"]],
+                   diff.genes.4[["repressed.genes"]])
 
 complete.DEGs <- unique(complete.DEGs)
 length(complete.DEGs)
@@ -381,7 +431,8 @@ length(complete.DEGs)
 ##que la función scale normaliza por columnas y nosotros queremos hacerlo por
 ##filas. Calculamos con la función t la traspuesta de nuestra matriz. 
 
-DEG.expression <- mean.expression[complete.DEGs,c("WT_with_Fe","WT_no_Fe","pye_with_Fe","pye_no_Fe")]
+DEG.expression <- mean.expression[complete.DEGs,
+                                  c("WT_with_Fe","WT_no_Fe","pye_with_Fe","pye_no_Fe")]
 
 normalized.DEG.expression <- t(scale(t(DEG.expression)))
 
@@ -390,4 +441,6 @@ normalized.DEG.expression <- t(scale(t(DEG.expression)))
 
 library(gplots)
 help(heatmap.2)
-heatmap.2(normalized.DEG.expression,Colv=FALSE,dendrogram="row",labRow=c(""),density.info="none",trace="none",col=heat.colors(100)[100:1],margins = c(8,8),cexCol=1.2)
+heatmap.2(normalized.DEG.expression,Colv=FALSE,dendrogram="row",
+          labRow=c(""),density.info="none",trace="none",
+          col=heat.colors(100)[100:1],margins = c(8,8),cexCol=1.2)
