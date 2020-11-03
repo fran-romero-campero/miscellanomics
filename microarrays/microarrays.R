@@ -5,7 +5,7 @@
 # Twitter: https://twitter.com/fran_rom_cam
 # IG: @greennetworks https://www.instagram.com/greennetworks/
 # Dpto Ciencias de la Computación e Inteligencia Artificial
-## Unidad de Desarrollo Vegetal del Instituto de Bioquímica Vegetal y Fotosíntesis
+# Instituto de Bioquímica Vegetal y Fotosíntesis
 # Universidad de Sevilla 
   
 # Lectura de los datos brutos.
@@ -107,7 +107,7 @@ plot(quality.analysis)
 ##comparables utilizando como descriptores globales de la distribución de los 
 ##niveles de expresión boxplot (cajas y bigotes) e histogramas.
 
-boxplot(microarray.raw.data,col=rainbow(14),las=2,ylab="Luminescence")
+boxplot(microarray.raw.data,col=rainbow(14),las=2,ylab="Fluorescence")
 hist(microarray.raw.data,col=rainbow(14))
 
 ##Para lograr que todos los microarrays sean comparables utilizamos el 
@@ -191,7 +191,7 @@ head(mean.expression)
 ##genes expresados de forma diferencial.
 
 plot(wt.with.fe,wt.no.fe,xlab="WT with Fe",ylab="WT no Fe",pch=19,cex=0.5)
-plot(pye.with.fe,pye.no.fe,xlab="pye with Fe",ylab="pye no Fe",pch=19,cex=0.5)
+  plot(pye.with.fe,pye.no.fe,xlab="pye with Fe",ylab="pye no Fe",pch=19,cex=0.5)
 plot(wt.with.fe,pye.with.fe,xlab="WT with Fe",ylab="pye with Fe",pch=19,cex=0.5)
 plot(wt.no.fe,pye.no.fe,xlab="WT no Fe",ylab="pye no Fe",pch=19,cex=0.5)
 
@@ -249,8 +249,8 @@ linear.fit <- lmFit(expression.level, experimental.design)
   
 contrast.matrix <- makeContrasts(WT_no_Fe-WT_with_Fe,
                                  pye_no_Fe-pye_with_Fe,
-                                 WT_with_Fe-pye_with_Fe,
-                                 WT_no_Fe-pye_no_Fe,
+                                 pye_with_Fe-WT_with_Fe,
+                                 pye_no_Fe-WT_no_Fe,
                                  levels=c("WT_with_Fe","WT_no_Fe",
                                           "pye_with_Fe","pye_no_Fe"))
 
@@ -267,9 +267,13 @@ contrast.results <- eBayes(contrast.linear.fit)
 ##identificador de la comparación a tener en cuenta (argumento coef). 
 ##El parametro sort.by nos permite ordenar las filas del marco de datos según 
 ##el fold-change o el p-valor. 
-
+nrow(expression.level)
 WT.with.no.Fe <- topTable(contrast.results, number=22810,coef=1,sort.by="logFC")
 head(WT.with.no.Fe)
+
+pye.with.no.Fe <- topTable(contrast.results, number=22810,coef=2,sort.by="logFC")
+head(pye.with.no.Fe)
+
 
 ##Cuando se comparan los transcriptomas de dos genotipos diferentes o de un 
 ##mismo genotipo bajo distintas condiciones existen diversos métodos para 
@@ -288,7 +292,7 @@ head(WT.with.no.Fe)
 ##Para la selección de DEGs extraemos el fold change e identificadores de cada
 ##sonda.
 
-fold.change.WT.with.no.Fe <- WT.with.no.Fe[["logFC"]]
+fold.change.WT.with.no.Fe <- WT.with.no.Fe$logFC
 genes.ids.WT.with.no.Fe <- rownames(WT.with.no.Fe)
 
 ##Fijamos un umbral de 2 que corresponde a genes que se expresan más del doble
@@ -300,6 +304,20 @@ repressed.genes.WT.with.no.Fe.1 <- genes.ids.WT.with.no.Fe[fold.change.WT.with.n
 
 length(activated.genes.WT.with.no.Fe.1)
 length(repressed.genes.WT.with.no.Fe.1)
+
+
+
+fold.change.pye.with.no.Fe <- pye.with.no.Fe$logFC
+genes.ids.pye.with.no.Fe <- rownames(pye.with.no.Fe)
+
+activated.genes.pye.with.no.Fe.1 <- genes.ids.pye.with.no.Fe[fold.change.pye.with.no.Fe > 1]
+repressed.genes.pye.with.no.Fe.1 <- genes.ids.pye.with.no.Fe[fold.change.pye.with.no.Fe < - 1]
+
+length(activated.genes.pye.with.no.Fe.1)
+length(repressed.genes.pye.with.no.Fe.1)
+
+
+
 
 ##Los gráficos que se usan principalmente para representar los DEGs según el
 ##criterio del fold-change son los gráficos de dispersión o scatterplots. 
@@ -346,6 +364,24 @@ saveText(repressed.genes.WT.with.no.Fe.1.table,
          file="repressed_genes_WT_with_no_Fe_1.txt")
 
 
+
+activated.genes.pye.with.no.Fe.1.table <- aafTableAnn(activated.genes.pye.with.no.Fe.1, 
+                                                     "ath1121501.db", aaf.handler())
+saveHTML(activated.genes.pye.with.no.Fe.1.table, 
+         file="activated_genes_pye_with_no_Fe_1.html")
+saveText(activated.genes.pye.with.no.Fe.1.table, 
+         file="activated_genes_pye_with_no_Fe_1.txt")
+
+repressed.genes.pye.with.no.Fe.1.table <- aafTableAnn(repressed.genes.pye.with.no.Fe.1, 
+                                                     "ath1121501.db", aaf.handler())
+saveHTML(repressed.genes.pye.with.no.Fe.1.table, 
+         file="repressed_genes_pye_with_no_Fe_1.html")
+saveText(repressed.genes.WT.with.no.Fe.1.table, 
+         file="repressed_genes_pye_with_no_Fe_1.txt")
+
+
+
+
 ## Método que combina inferencia estdística con fold-change:
 
 ##Para aplicar este método es necesario tener un alto número de réplicas
@@ -361,8 +397,8 @@ saveText(repressed.genes.WT.with.no.Fe.1.table,
 ##Para la selección de DEGs según este criterio extraemos el fold change, 
 ##el p-valor ajustado y los identificadores de cada sonda.
 
-fold.change.WT.with.no.Fe <- WT.with.no.Fe[["logFC"]]
-p.value.WT.with.no.Fe <- WT.with.no.Fe[["adj.P.Val"]]
+fold.change.WT.with.no.Fe <- WT.with.no.Fe$logFC
+p.value.WT.with.no.Fe <- WT.with.no.Fe$adj.P.Val
 genes.ids.WT.with.no.Fe <- rownames(WT.with.no.Fe)
 
 ##Fijamos como umbral de significancia un p-valor menor a 0.05 y como umbral 
@@ -387,7 +423,7 @@ log.p.value.WT.with.no.Fe <- -log10(p.value.WT.with.no.Fe)
 names(log.p.value.WT.with.no.Fe)  <- genes.ids.WT.with.no.Fe
 
 plot(fold.change.WT.with.no.Fe,log.p.value.WT.with.no.Fe,
-     pch=19,cex=0.5,col="grey",ylab="-log10(p value)",xlab="log2 fold change")
+     pch=19,cex=0.5,col="grey",ylab="-log10(p value)",xlab="log2 fold change",xlim=c(-6,6))
 
 points(fold.change.WT.with.no.Fe[activated.genes.WT.with.no.Fe.2],
        log.p.value.WT.with.no.Fe[activated.genes.WT.with.no.Fe.2],
@@ -414,14 +450,47 @@ text(fold.change.WT.with.no.Fe["251109_at"]+0.3,
 ##los genes expresados de forma diferencial en un vector y eliminar
 ##repeticiones.
 
-complete.DEGs <- c(diff.genes.1[["activated.genes"]],
-                   diff.genes.1[["repressed.genes"]],
-                   diff.genes.2[["activated.genes"]],
-                   diff.genes.2[["repressed.genes"]],
-                   diff.genes.3[["activated.genes"]],
-                   diff.genes.3[["repressed.genes"]],
-                   diff.genes.4[["activated.genes"]],
-                   diff.genes.4[["repressed.genes"]])
+## Para seleccionar los DEGs en el resto de comparaciones se realizarían de forma
+## repetitiva las mismas instrucciones pero con datos diferentes por lo tanto es 
+## apropiado definir la siguiente función que recibe como entrada el resultado de la
+## función eBayes (contrast.results), el número de genes total (gene.number), el  
+## identificador numérico de la comparación a considerar (comparison.number) y el umbral
+## de corte en el fold change (fold.change.threshold).
+DEGs.fold.change <- function(contrast.results,
+                             gene.number,
+                             comparison.number,
+                             fold.change.threshold)
+{
+  ## Extraer con topTable la información de DEGs
+  transcriptome.comparison <- topTable(contrast.results, number=gene.number,coef=comparison.number,sort.by="logFC")
+  ## Extraer el fold change de cada gen y los nombres de las sondas (genes).
+  current.fold.changes <- transcriptome.comparison[["logFC"]]
+  gene.ids <- rownames(transcriptome.comparison)
+  #gene.ids <- transcriptome.comparison[[1]]
+  
+  ## Extraer el nombre de los genes cuyo fold change excede el umbral prefijado (genes
+  ## activados) o que es menor que menos el umbral prefijado (genes reprimidos).
+  current.activated.genes <- gene.ids[current.fold.changes > fold.change.threshold]
+  current.repressed.genes <- gene.ids[current.fold.changes < - fold.change.threshold]
+  
+  ## Devolver una lista cuyas componentes se identifican con los nombres "activated.genes"
+  ## y "repressed.genes" y que contienen los correspondientes vectores. 
+  return(list(activated.genes = current.activated.genes, repressed.genes = current.repressed.genes))
+}
+
+diff.genes.1 <- DEGs.fold.change(contrast.results,gene.number=22810,comparison.number=1,fold.change.threshold=1) 
+diff.genes.2 <- DEGs.fold.change(contrast.results,gene.number=22810,comparison.number=2,fold.change.threshold=1) 
+diff.genes.3 <- DEGs.fold.change(contrast.results,gene.number=22810,comparison.number=3,fold.change.threshold=1) 
+diff.genes.4 <- DEGs.fold.change(contrast.results,gene.number=22810,comparison.number=4,fold.change.threshold=1) 
+
+complete.DEGs <- c(diff.genes.1$activated.genes,
+                   diff.genes.1$repressed.genes,
+                   diff.genes.2$activated.genes,
+                   diff.genes.2$repressed.genes,
+                   diff.genes.3$activated.genes,
+                   diff.genes.3$repressed.genes,
+                   diff.genes.4$activated.genes,
+                   diff.genes.4$repressed.genes)
 
 complete.DEGs <- unique(complete.DEGs)
 length(complete.DEGs)
@@ -443,4 +512,5 @@ library(gplots)
 help(heatmap.2)
 heatmap.2(normalized.DEG.expression,Colv=FALSE,dendrogram="row",
           labRow=c(""),density.info="none",trace="none",
-          col=heat.colors(100)[100:1],margins = c(8,8),cexCol=1.2)
+          col=redgreen(100),margins = c(8,8),cexCol=1.2)
+
